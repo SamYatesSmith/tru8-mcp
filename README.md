@@ -64,7 +64,7 @@ Add to your MCP settings:
 ### From source
 
 ```bash
-git clone https://github.com/tru8-evidence/tru8-mcp.git
+git clone https://github.com/SamYatesSmith/tru8-mcp.git
 cd tru8-mcp
 pip install -e .
 tru8-mcp

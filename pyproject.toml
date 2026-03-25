@@ -17,6 +17,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
+authors = [
+    {name = "Tru8", email = "hello@trueight.com"},
+]
 dependencies = [
     "mcp>=1.0.0",
     "httpx>=0.25.0",
