@@ -9,7 +9,7 @@ description = "Tru8 Evidence Research MCP server — structured evidence researc
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-keywords = ["mcp", "evidence", "fact-check", "ai-agent", "research"]
+keywords = ["mcp", "evidence", "evidence-research", "ai-agent", "research"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
