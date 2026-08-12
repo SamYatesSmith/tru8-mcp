@@ -4,31 +4,61 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tru8-mcp"
-version = "1.0.0"
+version = "1.0.4"
 description = "Tru8 Evidence Research MCP server — structured evidence research tools for AI agents"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-keywords = ["mcp", "evidence", "evidence-research", "ai-agent", "research"]
+authors = [{ name = "SamYatesSmith", email = "samyatessmith@gmail.com" }]
+keywords = ["mcp", "evidence", "fact-check", "ai-agent", "research"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
-authors = [
-    {name = "Tru8", email = "hello@trueight.com"},
-]
 dependencies = [
-    "mcp>=1.0.0",
+    # UPPER BOUND IS LOAD-BEARING. mcp 2.0.0 REMOVED mcp.server.fastmcp,
+    # which server.py imports, so `mcp>=1.0.0` resolved to 2.0.0 and every
+    # fresh `pip install tru8-mcp` died on ImportError.
+    #
+    # LOWER BOUND RAISED 1.2 -> 1.12 (2026-08-06): server.py now passes
+    # `annotations=ToolAnnotations(...)` to @mcp.tool(). On an SDK without that
+    # keyword the decorator raises TypeError at IMPORT time, which for the
+    # hosted transport means the API does not boot. Verified against the 1.12.4
+    # sdist: `FastMCP.tool(name, title, description, annotations,
+    # structured_output)` — present. Do not lower this without re-checking that
+    # signature in the target version.
+    "mcp>=1.12,<2",
     "httpx>=0.25.0",
 ]
 
 [project.urls]
-Homepage = "https://www.trueight.com/developers"
-Repository = "https://github.com/SamYatesSmith/tru8-mcp"
+Homepage = "https://www.trueight.com"
 Documentation = "https://www.trueight.com/developers"
+Repository = "https://github.com/SamYatesSmith/tru8-mcp"
+Issues = "https://github.com/SamYatesSmith/tru8-mcp/issues"
 
 [project.scripts]
 tru8-mcp = "tru8_mcp.server:main"
+
+# The package modules live flat alongside this pyproject.toml (the project
+# directory itself is the `tru8_mcp` package, with relative imports). Map them
+# into a proper `tru8_mcp/` package inside the built sdist + wheel.
+[tool.hatch.build.targets.wheel.force-include]
+"__init__.py" = "tru8_mcp/__init__.py"
+"__main__.py" = "tru8_mcp/__main__.py"
+"server.py" = "tru8_mcp/server.py"
+"tools.py" = "tru8_mcp/tools.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "__init__.py",
+    "__main__.py",
+    "server.py",
+    "tools.py",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]

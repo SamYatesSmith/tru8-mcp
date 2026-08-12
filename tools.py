@@ -8,11 +8,20 @@ import asyncio
 import json
 import logging
 import os
+from importlib.metadata import PackageNotFoundError, version
 from typing import Optional
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+# Client identifier sent on every request so the backend can attribute usage to
+# the MCP package (persisted as Check.client). Format: "mcp/<version>".
+try:
+    _CLIENT_VERSION = version("tru8-mcp")
+except PackageNotFoundError:  # running from source, not installed
+    _CLIENT_VERSION = "dev"
+CLIENT_HEADER = f"mcp/{_CLIENT_VERSION}"
 
 # Pipeline timeouts (seconds)
 PIPELINE_TIMEOUT = 180.0
@@ -49,13 +58,24 @@ class Tru8APIClient:
         ).rstrip("/")
         self.api_key = api_key or os.environ.get("TRU8_API_KEY", "")
         if not self.api_key:
+            # One class serves both transports, so this message must too. The
+            # old wording named only the environment variable, which is the
+            # stdio answer — a hosted caller over /mcp has no environment to
+            # set and was being told to do something impossible.
             raise ValueError(
-                "TRU8_API_KEY environment variable required. "
-                "Create one at your Tru8 dashboard → Settings → Developer."
+                "No Tru8 API key supplied. Over HTTP, send your key as an "
+                "'X-API-Key' header (or an 'apiKey' query parameter). Running "
+                "the tru8-mcp package locally, set the TRU8_API_KEY "
+                "environment variable. Create a key at your Tru8 dashboard "
+                "→ Settings → Developer."
             )
 
     def _headers(self) -> dict:
-        return {"X-API-Key": self.api_key, "Accept": "application/json"}
+        return {
+            "X-API-Key": self.api_key,
+            "Accept": "application/json",
+            "X-Tru8-Client": CLIENT_HEADER,
+        }
 
     @staticmethod
     def _detect_input_type(claim: str) -> Optional[str]:
